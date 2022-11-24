@@ -51,12 +51,17 @@ echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ArticleTitle'])
 echo ('<br/>');
 
 echo ('doi: ');
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']))
-	echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
+if (!is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']))
+echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
+	else echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][0]);
 echo ('<br/>');
 
 echo ('Dergi ismi: ');
-echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['Title']);
+// : kullanılmışsa gersini kaldır at
+$dergi = $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['Title'];
+if (strpos($dergi, " :") !== false)
+	$dergi = substr($dergi, 0, strpos($dergi, " :"));
+echo ($dergi);
 echo ('<br/>');
 
 echo ('Derginin kısa ismi: ');
@@ -88,7 +93,8 @@ if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal'][
 echo ('<br/>');
 
 echo ('Başlangıç sayfası: ');
-echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage']);
+if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage']))
+	echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage']);
 echo ('<br/>');
 
 echo ('Bitiş sayfası: ');
@@ -96,15 +102,34 @@ if (isset($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination'
 	echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['EndPage']);
 echo ('<br/>');
 
+if (isset ( $xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['ForeName']))
+// tek yazar var
+{
+	echo ('Yazar: ');
+	echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['ForeName']).' ';
+	echo ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['LastName']);
+echo ('<br/>');	
+echo ('Yazar sayısı: 1');
+echo ('<br/>');	
+}
+else {  // birden fazla yazar var
 $yazarlar = "";
 $n=0;
-foreach( $xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'] as $author) {
-	$yazarlar = $yazarlar.$author['ForeName'].' '.$author['LastName'].', ';
-	$n=$n+1;
-    }
+$count = count ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']);
+//echo ($count);
+for  ($i=0; $i<$count; $i++) {
+	if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'][$i]['ForeName'] )) {
+		// CollectiveName - Grup İsmi yok
+		$author = $xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'][$i]; 
+		$yazarlar = $yazarlar.$author['ForeName'].' '.$author['LastName'].', ';
+		$n=$n+1;
+		
+		}
+}
 echo ('Yazar sayısı: '.$n.'<br/>');
 echo ('Yazarlar: ');
 echo substr ($yazarlar,0,-2);
+}
 echo ('<br/>');
 
 echo ('Yayın türü: ');
