@@ -2,7 +2,13 @@
 get document info from pubmedapi if PMID is known
 
 Asks pubmedid from user,
-prints document info you can try those pmid's:
+prints document info 
+
+you may get if you query more than 3 documents per second "{"error":"/lbsm/eutils_lb -> Neg","api-key":"xx.yy.zz.abb","type":"ip",
+"status":"ok"}"
+to be able to query more than 10 documents per seconds you must get an api which is freely available, please read: https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
+
+you can try those pmid's:
 
 35459526
 34890845
