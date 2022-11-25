@@ -8,13 +8,14 @@ programmaed by Zafer Akçalı, MD -->
 </head>
 
 <body>
-
+<a href="PMID nerede.png" target="_blank"> PMID nereden bakılır? </a>
 <form method="post" action="">
 pubmed id (PMID)  numarasını giriniz<br/>
 <input type="text" name="pmid" id="pmid" ">
 <input type="submit">
 </form>
-
+<button id="pubmedGoster" onclick="pubmedGoster()">Pubmed yayınını göster</button>
+<br/>
 <?php
 // pubmedapi V1.0
 // By Zafer Akçalı, MD
@@ -26,10 +27,12 @@ $girilenveri=trim($_POST["pmid"]);
 if($girilenveri!=""){
 	
 $preText="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=";
-// $pmid="20493709";
 $pmid=$girilenveri;
 $url=$preText.$pmid;
-//$url='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=20493709';
+// https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
+// saniyede 10'dan fazla sorgu için, api-key alarak aşağıdaki iki satırı açmalısınız: 
+// $postText="&api_key=ABCD1234";
+// $url = $url.$postText;
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
@@ -37,7 +40,7 @@ curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 curl_setopt($ch, CURLOPT_URL, $url);
 $data=curl_exec($ch);
 curl_close($ch);
-
+echo ('</>');
 $xml_object = simplexml_load_string($data);
 $xml_array=json_decode(json_encode($xml_object),1);
 //echo($data);
@@ -144,6 +147,12 @@ echo ('<br/>');
 }
 
 ?>
-
+<script>
+function pubmedGoster() {
+var	w=document.getElementById('pmid').value.replace(" ","");
+	urlText = "https://pubmed.ncbi.nlm.nih.gov/"+w;
+	window.open(urlText,"_blank");
+}
+</script>
 </body>
 </html>
