@@ -8,6 +8,9 @@ you may get if you query more than 3 documents per second "{"error":"/lbsm/eutil
 "status":"ok"}"
 to be able to query more than 10 documents per seconds you must get an api which is freely available, please read: https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
 
+There are both php and javascript code to fetch from publons api
+javascript code works from browser, so api-key maynot be necessary. Also your api key must not be visible on other users web browser
+
 you can try those pmid's:
 
 35459526
