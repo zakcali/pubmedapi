@@ -41,4 +41,5 @@ you can try those pmid's, some are challenging
 35604621
 
 
-todo: 555757 is challening for published year for javascipt code, mistakenly finds 1981 instead of 1978
+to do-1: 555757 is challening. Because published year for javascipt code, mistakenly finds 1981 instead of 1978
+to do-2: 35653776 is challenging. because abstracts are different for php and javascript code
