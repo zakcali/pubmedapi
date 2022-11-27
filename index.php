@@ -9,7 +9,7 @@ programmed by Zafer Akçalı, MD -->
 
 <body>
 <?php
-// pubmedapi V2.0
+// pubmedapi V2.1
 // By Zafer Akçalı, MD
 // Zafer Akçalı tarafından programlanmıştır
 $PMID=$doi=$ArticleTitle=$dergi=$ISOAbbreviation=$ISSN=$eISSN=$Year=$Volume=$Issue=$StartPage=$EndPage=$yazarlar=$PublicationType=$AbstractText="";
@@ -18,10 +18,8 @@ if (isset($_POST['pmid'])) {
 $girilenveri=trim($_POST["pmid"]);
 
 if($girilenveri!=""){
-	
 $preText="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=";
-$pmid=$girilenveri;
-$url=$preText.$pmid;
+$url=$preText.preg_replace("/[^0-9]/", "", $girilenveri ); // sadece rakamlar
 // https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
 // saniyede 10'dan fazla sorgu için, api-key alarak aşağıdaki iki satırı açmalısınız: 
 // $postText="&api_key=ABCD1234";
@@ -35,43 +33,43 @@ $data=curl_exec($ch);
 curl_close($ch);
 $xml_object = simplexml_load_string($data);
 $xml_array=json_decode(json_encode($xml_object),1);
-
+//PubmedId PMID
 $PMID=($xml_array['PubmedArticle']['MedlineCitation']['PMID']);
-
+// doi : gelen cevap dizi bile olsa ilk elemanı her zaman doi
 if (!is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']))
 	$doi= ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
 else $doi = ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][0]);
-
+// Makalenin başlığı
 $ArticleTitle= $xml_array['PubmedArticle']['MedlineCitation']['Article']['ArticleTitle'];
-
+// Dergi ismi
 $dergi = $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['Title'];
-if (strpos($dergi, " :") !== false) // : kullanılmışsa gersini kaldır at
+if (strpos($dergi, " :") !== false) // : kullanılmışsa gerisini kaldır at
 	$dergi = substr($dergi, 0, strpos($dergi, " :"));
-
+// Dergi kısa ismi
 $ISOAbbreviation= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['ISOAbbreviation'];
-
+// ISSN numarası
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['MedlineJournalInfo']['ISSNLinking']))
 	$ISSN=$xml_array['PubmedArticle']['MedlineCitation']['MedlineJournalInfo']['ISSNLinking'];
-
+//eISSN numarası
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['ISSN']))
 	$eISSN=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['ISSN'];
-
+// Derginin basıldığı / yayımlandığı yıl
 $Year =$xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['PubDate']['Year'];
-
+// Eğer var ise Cilt numarası
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Volume']) )
 	$Volume=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Volume'];
-
+//Sayı
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Issue']))
 	$Issue= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Issue'];
-
+// Başlangıç sayfası veya elektronik dergilerde makale numarası
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage']))
 	$StartPage= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage'];
-
+// Bitiş sayfası
 if (isset($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['EndPage']))
 	$EndPage= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['EndPage'];
-// Yazar sayını ve yazar isimlerini bul	
+// Yazar sayısını ve yazar isimlerini bul	
 if (isset ( $xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'][0])) {
-// birden fazla yazar var
+// birden fazla yazar var: hepsini teker teker çağır, sadece isim-soyismi olan yazarları topla, grup ismi var ise sayma
 $n=0;
 $count = count ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']);
 for  ($i=0; $i<$count; $i++) {
@@ -82,24 +80,29 @@ for  ($i=0; $i<$count; $i++) {
 		$n=$n+1;
 		}
 }
+// yazar sayısı
 $yazarS=$n;
+// yazarların isimleri. metin sonundaki boşluk ve virgül silindi
 $yazarlar=substr ($yazarlar,0,-2);
 }
 else {
-// tek yazar var	
+// tek yazar var, yazar sayısı 1
 	$yazarS=1;
+// tek yazarın ismi
 	$yazarlar=$xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['ForeName'].' '
 	.$xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['LastName'];
 }
-
+// yayın türü belirtilmiş ise ve birden fazla yayın türü var: sadece ilk türü al
 if (is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'])) 
 	$PublicationType=$xml_array['PubmedArticle']['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'][0];
+// yayın türü belirtilmiş, ama sadece 1 adet yayın türü var	
 else $PublicationType=$xml_array['PubmedArticle']['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'];
-
+// Abstract, yani özet var ise
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract'])) {
+// Özet, her cümlesi ayrı bir dizi elemanı olacak şekilde dizilmiş ise, dizinin sadece ilk elemanını al
 if (is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText']) )
-	// Multi-line abstract, fetch only first line of abstract
 	$AbstractText=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'][0];
+// özet, çok cümleli de olsa, tek bir eleman olarak aktarılmış
 else if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'])) 
 	$AbstractText=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'];
 }
@@ -143,7 +146,7 @@ var	w=document.getElementById('pmid').value.replace(" ","");
 
 async function pubmedGetir() {
 var	w='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id='+
-document.getElementById('pmid').value.replace(" ","");
+document.getElementById('pmid').value.replace(/\D/g, ""); // Pubmedid için yazışan sadece rakamları al
 // https://codetogo.io/how-to-fetch-xml-in-javascript/
 fetch(w)
   .then(response => response.text())
@@ -151,7 +154,7 @@ fetch(w)
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(data, "application/xml");
     console.log(xmlDoc);
-// delete values returned from php
+// php ile çağrılmış ve doldurulmuş alanları sil
 document.getElementById('PMID').value="";
 document.getElementById('doi').value="";
 document.getElementById('ArticleTitle').value="";
@@ -168,49 +171,61 @@ document.getElementById('yazarS').value="";
 document.getElementById('yazarlar').value="";
 document.getElementById('PublicationType').value="";
 document.getElementById('ozetAlan').value="";
-
+//PubmedId PMID
 document.getElementById('PMID').value=xmlDoc.getElementsByTagName('PMID')[0].childNodes[0].nodeValue;
-// Birden fazla id var sa bile, birincisini aldı
+// doi: Birden fazla id varsa bile, birincisini alıyor ve her zaman doi oluyor
 document.getElementById('doi').value=xmlDoc.getElementsByTagName('ELocationID')[0].childNodes[0].nodeValue;
 // Makalenin başlığı
 document.getElementById('ArticleTitle').value=xmlDoc.getElementsByTagName('ArticleTitle')[0].childNodes[0].nodeValue;
-// Dergi ismi, " :" görürsen kes
+// Dergi ismi, " :" görürsen sonrasını kes, kaldır-at
 var gereksiz=xmlDoc.getElementsByTagName('Title')[0].childNodes[0].nodeValue;
 var gerekli = gereksiz.split(' :');
 var dergi = gerekli[0];
 document.getElementById('Title').value=dergi;
 // Derginin kısa ismi
 document.getElementById('ISOAbbreviation').value=xmlDoc.getElementsByTagName('ISOAbbreviation')[0].childNodes[0].nodeValue;
+// ISSN numarası
 document.getElementById('ISSN').value=xmlDoc.getElementsByTagName('ISSNLinking')[0].childNodes[0].nodeValue;
+// eISSN numarası
 document.getElementById('eISSN').value=xmlDoc.getElementsByTagName('ISSN')[0].childNodes[0].nodeValue;	
-// Yıl, cilt, sayı
+// Derginin basıldığı / yayımlandığı yıl
 document.getElementById('Year').value=xmlDoc.getElementsByTagName('Year')[0].childNodes[0].nodeValue;	
+// Eğer var ise, cilt numarası
 if (xmlDoc.getElementsByTagName('Volume')[0])
 	document.getElementById('Volume').value=xmlDoc.getElementsByTagName('Volume')[0].childNodes[0].nodeValue;	
+// Eğer var ise sayı
 if (xmlDoc.getElementsByTagName('Issue')[0])
 	document.getElementById('Issue').value=xmlDoc.getElementsByTagName('Issue')[0].childNodes[0].nodeValue;	
-	// Başlangıç-bitiş sayfası / numarası
+// Eğer var ise, başlangıç sayfası veya elektronik dergilerde makale numarası
 if (xmlDoc.getElementsByTagName('StartPage')[0])
 	document.getElementById('StartPage').value=xmlDoc.getElementsByTagName('StartPage')[0].childNodes[0].nodeValue;	
+// // Eğer var ise, bitiş sayfası
 if (xmlDoc.getElementsByTagName('EndPage')[0])
 	document.getElementById('EndPage').value=xmlDoc.getElementsByTagName('EndPage')[0].childNodes[0].nodeValue;	
-if (xmlDoc.getElementsByTagName('PublicationType')[0])
-	document.getElementById('PublicationType').value=xmlDoc.getElementsByTagName('PublicationType')[0].childNodes[0].nodeValue;	
-if (xmlDoc.getElementsByTagName('AbstractText')[0])
-	document.getElementById('ozetAlan').value=xmlDoc.getElementsByTagName('AbstractText')[0].childNodes[0].nodeValue;	
+// php'nin aksine, tek yazar için de, çok yazar için de aynı kod çalışıyor
 var yazarYaz='';
 var yazarlar=xmlDoc.getElementsByTagName('AuthorList')[0];
 var yazarSay=yazarlar.childNodes.length;
-document.getElementById('yazarS').value=yazarSay;
+var n=0;
 for(var i=0; i<yazarSay;i++){
 	if ( xmlDoc.getElementsByTagName('ForeName')[i]) {
     yazarYaz=yazarYaz+xmlDoc.getElementsByTagName('ForeName')[i].childNodes[0].nodeValue + ' ';
 	yazarYaz=yazarYaz+xmlDoc.getElementsByTagName('LastName')[i].childNodes[0].nodeValue + ', '
+	n=n+1;
 	}
 }
-document.getElementById('yazarlar').value=yazarYaz.slice(0, -2); // remove ", " from the end
+yazarSay=n; // sadece Adı ve Soyadı olan gerçek insan isimleri sayıldı, yazar grubu ismi sayılmadı
+// yazar sayısı
+document.getElementById('yazarS').value=yazarSay;
+// yazarların isimleri. metin sonundaki boşluk ve virgül silindi
+document.getElementById('yazarlar').value=yazarYaz.slice(0, -2); 
+// yayın türü belirtilmiş ise al, birden fazla yayın türü var ise sadece ilk türü al
+if (xmlDoc.getElementsByTagName('PublicationType')[0])
+	document.getElementById('PublicationType').value=xmlDoc.getElementsByTagName('PublicationType')[0].childNodes[0].nodeValue;	
+// Abstract, yani özet var ise al
+if (xmlDoc.getElementsByTagName('AbstractText')[0])
+	document.getElementById('ozetAlan').value=xmlDoc.getElementsByTagName('AbstractText')[0].childNodes[0].nodeValue;
   })
-  
   .catch(console.error);
 }
 </script>
