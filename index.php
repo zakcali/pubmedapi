@@ -185,9 +185,11 @@ document.getElementById('Title').value=dergi;
 // Derginin kısa ismi
 document.getElementById('ISOAbbreviation').value=xmlDoc.getElementsByTagName('ISOAbbreviation')[0].childNodes[0].nodeValue;
 // ISSN numarası
-document.getElementById('ISSN').value=xmlDoc.getElementsByTagName('ISSNLinking')[0].childNodes[0].nodeValue;
+if (xmlDoc.getElementsByTagName('ISSNLinking')[0])
+	document.getElementById('ISSN').value=xmlDoc.getElementsByTagName('ISSNLinking')[0].childNodes[0].nodeValue;
 // eISSN numarası
-document.getElementById('eISSN').value=xmlDoc.getElementsByTagName('ISSN')[0].childNodes[0].nodeValue;	
+if (xmlDoc.getElementsByTagName('ISSN')[0])
+	document.getElementById('eISSN').value=xmlDoc.getElementsByTagName('ISSN')[0].childNodes[0].nodeValue;	
 // Derginin basıldığı / yayımlandığı yıl
 document.getElementById('Year').value=xmlDoc.getElementsByTagName('Year')[0].childNodes[0].nodeValue;	
 // Eğer var ise, cilt numarası
