@@ -41,4 +41,4 @@ you can try those pmid's, some are challenging
 35604621
 
 
-todo: 555757 is challing for published year for javascipt code, mistakenly finds 1981 instead of 1978
+todo: 555757 is challening for published year for javascipt code, mistakenly finds 1981 instead of 1978
