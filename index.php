@@ -33,12 +33,17 @@ $data=curl_exec($ch);
 curl_close($ch);
 $xml_object = simplexml_load_string($data);
 $xml_array=json_decode(json_encode($xml_object),1);
+// print_r ($xml_array['PubmedArticle']['MedlineCitation']);
+// PMID gelmediyse hata var, gerisine devam etme
+if (isset ($xml_array['PubmedArticle']['MedlineCitation']['PMID'])) {
 //PubmedId PMID
 $PMID=($xml_array['PubmedArticle']['MedlineCitation']['PMID']);
 // doi : gelen cevap dizi bile olsa ilk elemanı her zaman doi
+if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'])) {
 if (!is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']))
 	$doi= ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
 else $doi = ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][0]);
+}
 // Makalenin başlığı
 $ArticleTitle= $xml_array['PubmedArticle']['MedlineCitation']['Article']['ArticleTitle'];
 // Dergi ismi
@@ -105,9 +110,9 @@ if (is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstrac
 // özet, çok cümleli de olsa, tek bir eleman olarak aktarılmış
 else if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'])) 
 	$AbstractText=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'];
-}
-// print_r ($xml_array['PubmedArticle']['MedlineCitation']);
-}
+			}
+		}
+	}
 }
 ?>
 <a href="PMID nerede.png" target="_blank"> PMID nereden bakılır? </a>
@@ -173,8 +178,9 @@ document.getElementById('PublicationType').value="";
 document.getElementById('ozetAlan').value="";
 //PubmedId PMID
 document.getElementById('PMID').value=xmlDoc.getElementsByTagName('PMID')[0].childNodes[0].nodeValue;
-// doi: Birden fazla id varsa bile, birincisini alıyor ve her zaman doi oluyor
-document.getElementById('doi').value=xmlDoc.getElementsByTagName('ELocationID')[0].childNodes[0].nodeValue;
+// eğer var ise, doi: Birden fazla id varsa bile, birincisini alıyor ve her zaman doi oluyor
+if (xmlDoc.getElementsByTagName('ELocationID')[0])
+	document.getElementById('doi').value=xmlDoc.getElementsByTagName('ELocationID')[0].childNodes[0].nodeValue;
 // Makalenin başlığı
 document.getElementById('ArticleTitle').value=xmlDoc.getElementsByTagName('ArticleTitle')[0].childNodes[0].nodeValue;
 // Dergi ismi, " :" görürsen sonrasını kes, kaldır-at
