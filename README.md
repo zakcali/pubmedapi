@@ -42,3 +42,5 @@ you can try those pmid's, some are challenging
 
 555757 // for testing publication year, difficult for javascipt routine
 35653776 // for testing abstracts including bold tags, difficult for javascript routine: <b> some text </b>
+
+to-do-1: correct doi for 35666833
