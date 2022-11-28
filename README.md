@@ -28,7 +28,7 @@ you can try those pmid's, some are challenging
 35695908
 35639050
 35695134
-35666833
+35666833 // difficult for finding real doi
 35652580
 35599042
 
@@ -42,5 +42,5 @@ you can try those pmid's, some are challenging
 
 555757 // for testing publication year, difficult for javascipt routine
 35653776 // for testing abstracts including bold tags, difficult for javascript routine: <b> some text </b>
+35666833
 
-to-do-1: correct doi for 35666833
