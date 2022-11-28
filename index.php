@@ -9,7 +9,7 @@ programmed by Zafer Akçalı, MD -->
 
 <body>
 <?php
-// pubmedapi V2.1
+// pubmedapi V2.2
 // By Zafer Akçalı, MD
 // Zafer Akçalı tarafından programlanmıştır
 $PMID=$doi=$ArticleTitle=$dergi=$ISOAbbreviation=$ISSN=$eISSN=$Year=$Volume=$Issue=$StartPage=$EndPage=$yazarlar=$PublicationType=$AbstractText="";
@@ -144,7 +144,7 @@ Yayın türü: <input type="text" name="PublicationType" size="20"  id="Publicat
 <textarea rows = "20" cols = "90" name = "ozet" id="ozetAlan"><?php echo $AbstractText;?></textarea> 
 <script>
 function pubmedGoster() {
-var	w=document.getElementById('pmid').value.replace(" ","");
+var	w=document.getElementById('pmid').value.replace(/\D/g, "");
 	urlText = "https://pubmed.ncbi.nlm.nih.gov/"+w;
 	window.open(urlText,"_blank");
 }
@@ -153,7 +153,7 @@ async function pubmedGetir() {
 var	w='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id='+
 document.getElementById('pmid').value.replace(/\D/g, ""); // Pubmedid için yazışan sadece rakamları al
 // https://codetogo.io/how-to-fetch-xml-in-javascript/
-fetch(w)
+fetch(w, { mode: 'cors'})
   .then(response => response.text())
   .then(data => {
     const parser = new DOMParser();
@@ -197,7 +197,9 @@ if (xmlDoc.getElementsByTagName('ISSNLinking')[0])
 if (xmlDoc.getElementsByTagName('ISSN')[0])
 	document.getElementById('eISSN').value=xmlDoc.getElementsByTagName('ISSN')[0].childNodes[0].nodeValue;	
 // Derginin basıldığı / yayımlandığı yıl
-document.getElementById('Year').value=xmlDoc.getElementsByTagName('Year')[0].childNodes[0].nodeValue;	
+yilBilgisi=xmlDoc.evaluate ('//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate/Year', xmlDoc)
+document.getElementById('Year').value=yilBilgisi.iterateNext().textContent;
+//xmlDoc.getElementsByTagName('PubDate')[0].childNode['Year'].nodeValue;	
 // Eğer var ise, cilt numarası
 if (xmlDoc.getElementsByTagName('Volume')[0])
 	document.getElementById('Volume').value=xmlDoc.getElementsByTagName('Volume')[0].childNodes[0].nodeValue;	
