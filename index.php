@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V2.3: Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -9,7 +9,7 @@ programmed by Zafer Akçalı, MD -->
 
 <body>
 <?php
-// pubmedapi V2.2
+// pubmedapi V2.3
 // By Zafer Akçalı, MD
 // Zafer Akçalı tarafından programlanmıştır
 $PMID=$doi=$ArticleTitle=$dergi=$ISOAbbreviation=$ISSN=$eISSN=$Year=$Volume=$Issue=$StartPage=$EndPage=$yazarlar=$PublicationType=$AbstractText="";
@@ -157,8 +157,9 @@ fetch(w, { mode: 'cors'})
   .then(response => response.text())
   .then(data => {
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data, "application/xml");
-    console.log(xmlDoc);
+//console.log(data);
+const trimmed = data.replace(/<b>/g, "").replace(/<\/b>/g, ""); // özet metninden bold işaretlerini kaldır: <b> </b>
+const xmlDoc = parser.parseFromString(trimmed, "application/xml");
 // php ile çağrılmış ve doldurulmuş alanları sil
 document.getElementById('PMID').value="";
 document.getElementById('doi').value="";
@@ -190,16 +191,14 @@ var dergi = gerekli[0];
 document.getElementById('Title').value=dergi;
 // Derginin kısa ismi
 document.getElementById('ISOAbbreviation').value=xmlDoc.getElementsByTagName('ISOAbbreviation')[0].childNodes[0].nodeValue;
-// ISSN numarası
+// varsa ISSN numarası
 if (xmlDoc.getElementsByTagName('ISSNLinking')[0])
 	document.getElementById('ISSN').value=xmlDoc.getElementsByTagName('ISSNLinking')[0].childNodes[0].nodeValue;
-// eISSN numarası
+// varsa eISSN numarası
 if (xmlDoc.getElementsByTagName('ISSN')[0])
 	document.getElementById('eISSN').value=xmlDoc.getElementsByTagName('ISSN')[0].childNodes[0].nodeValue;	
-// Derginin basıldığı / yayımlandığı yıl
-yilBilgisi=xmlDoc.evaluate ('//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate/Year', xmlDoc)
-document.getElementById('Year').value=yilBilgisi.iterateNext().textContent;
-//xmlDoc.getElementsByTagName('PubDate')[0].childNode['Year'].nodeValue;	
+// Derginin basıldığı / yayımlandığı yıl : gördüğümüz ilk 'Year', maalesef makalenin basıldığı yıl olmayabilir, tam hedefi yazmak gerek
+document.getElementById('Year').value=xmlDoc.evaluate('//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate/Year', xmlDoc).iterateNext().textContent;
 // Eğer var ise, cilt numarası
 if (xmlDoc.getElementsByTagName('Volume')[0])
 	document.getElementById('Volume').value=xmlDoc.getElementsByTagName('Volume')[0].childNodes[0].nodeValue;	
