@@ -40,13 +40,5 @@ you can try those pmid's, some are challenging
 35636973
 35604621
 
-
-to do-1: 555757 is challening. Because published year for javascipt code, mistakenly finds 1981 instead of 1978
-
-mission accomplished-1: 
-
-yilBilgisi=xmlDoc.evaluate ('//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate/Year', xmlDoc)
-
-document.getElementById('Year').value=yilBilgisi.iterateNext().textContent;
-
-to do-2: 35653776 is challenging. because abstracts are different for php and javascript code. <b>What is already known on this subject?</b> stops iterating
+555757 // for testing publication year, difficult for javascipt routine
+35653776 // for testing abstracts including bold tags, difficult for javascript routine: <b> some text </b>
