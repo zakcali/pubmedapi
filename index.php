@@ -186,13 +186,13 @@ document.getElementById('PublicationType').value="";
 document.getElementById('ozetAlan').value="";
 //PubmedId PMID
 document.getElementById('PMID').value=xmlDoc.getElementsByTagName('PMID')[0].childNodes[0].nodeValue;
-// eğer var ise, doi: Birden fazla id varsa bile, birincisini alıyor ve her zaman doi oluyor
-count=(xmlDoc.getElementsByTagName('ELocationID').length)
+// eğer var ise, doi
 if (xmlDoc.getElementsByTagName('ELocationID')[0]) {
 var doi="";
-for (var i=0; i<xmlDoc.getElementsByTagName('ELocationID').length; i++) {
+const count=xmlDoc.getElementsByTagName('ELocationID').length;
+for (var i=0; i<count; i++) {
 	doi=xmlDoc.getElementsByTagName('ELocationID')[i].childNodes[0].nodeValue;
-	if (doi.substring (0,3)== '10.0') // gerçek doi numarası 10.0 ile başlar
+	if (doi.substring (0,3)== '10.') // gerçek doi, 10. ile başlar
 		break;
 	}
 document.getElementById('doi').value=doi;
