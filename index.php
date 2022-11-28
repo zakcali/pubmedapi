@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V2.3: Bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V2.4: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -9,7 +9,7 @@ programmed by Zafer Akçalı, MD -->
 
 <body>
 <?php
-// pubmedapi V2.3
+// pubmedapi
 // By Zafer Akçalı, MD
 // Zafer Akçalı tarafından programlanmıştır
 $PMID=$doi=$ArticleTitle=$dergi=$ISOAbbreviation=$ISSN=$eISSN=$Year=$Volume=$Issue=$StartPage=$EndPage=$yazarlar=$PublicationType=$AbstractText="";
@@ -42,7 +42,14 @@ $PMID=($xml_array['PubmedArticle']['MedlineCitation']['PMID']);
 if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'])) {
 if (!is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']))
 	$doi= ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
-else $doi = ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][0]);
+else {// dizi içinde 10.0 ile başlayan gerçek doi numarasını bulur 
+	$count = count ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
+	for  ($i=0; $i<$count; $i++) {
+		$doi=$xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][$i];
+			if (substr ($doi, 0, 3) == '10.')
+				break;
+		}
+	}
 }
 // Makalenin başlığı
 $ArticleTitle= $xml_array['PubmedArticle']['MedlineCitation']['Article']['ArticleTitle'];
@@ -157,7 +164,7 @@ fetch(w, { mode: 'cors'})
   .then(response => response.text())
   .then(data => {
     const parser = new DOMParser();
-//console.log(data);
+// console.log(data);
 const trimmed = data.replace(/<b>/g, "").replace(/<\/b>/g, ""); // özet metninden bold işaretlerini kaldır: <b> </b>
 const xmlDoc = parser.parseFromString(trimmed, "application/xml");
 // php ile çağrılmış ve doldurulmuş alanları sil
@@ -180,8 +187,16 @@ document.getElementById('ozetAlan').value="";
 //PubmedId PMID
 document.getElementById('PMID').value=xmlDoc.getElementsByTagName('PMID')[0].childNodes[0].nodeValue;
 // eğer var ise, doi: Birden fazla id varsa bile, birincisini alıyor ve her zaman doi oluyor
-if (xmlDoc.getElementsByTagName('ELocationID')[0])
-	document.getElementById('doi').value=xmlDoc.getElementsByTagName('ELocationID')[0].childNodes[0].nodeValue;
+count=(xmlDoc.getElementsByTagName('ELocationID').length)
+if (xmlDoc.getElementsByTagName('ELocationID')[0]) {
+var doi="";
+for (var i=0; i<xmlDoc.getElementsByTagName('ELocationID').length; i++) {
+	doi=xmlDoc.getElementsByTagName('ELocationID')[i].childNodes[0].nodeValue;
+	if (doi.substring (0,3)== '10.0') // gerçek doi numarası 10.0 ile başlar
+		break;
+	}
+document.getElementById('doi').value=doi;
+}
 // Makalenin başlığı
 document.getElementById('ArticleTitle').value=xmlDoc.getElementsByTagName('ArticleTitle')[0].childNodes[0].nodeValue;
 // Dergi ismi, " :" görürsen sonrasını kes, kaldır-at
