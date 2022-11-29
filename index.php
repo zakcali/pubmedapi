@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V2.4: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V2.5: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -165,7 +165,8 @@ fetch(w, { mode: 'cors'})
   .then(data => {
     const parser = new DOMParser();
 // console.log(data);
-const trimmed = data.replace(/<b>/g, "").replace(/<\/b>/g, ""); // özet metninden bold işaretlerini kaldır: <b> </b>
+// özet metninden işaretleri kaldır: <b> </b> <sub> </sub>
+const trimmed = data.replace(/<b>/g, "").replace(/<\/b>/g, "").replace(/<sub>/g, "").replace(/<\/sub>/g, "");
 const xmlDoc = parser.parseFromString(trimmed, "application/xml");
 // php ile çağrılmış ve doldurulmuş alanları sil
 document.getElementById('PMID').value="";
