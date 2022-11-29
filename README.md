@@ -51,6 +51,8 @@ you can try those pmid's, some are challenging
 
 32120362 // difficult for authorlist-for javascipt
 
+31258358 // difficult for substring tag <sub> </sub> for javascript
+
 to-do-1: find correct authorlist for javascript code for 32120362
 
 to-do: Some of the abstracts may be incomplete. It seems not so important.
