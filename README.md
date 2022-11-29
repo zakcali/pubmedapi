@@ -53,6 +53,4 @@ you can try those pmid's, some are challenging
 
 31258358 // difficult for substring tag <sub> </sub> for javascript
 
-to-do-1: find correct authorlist for javascript code for 32120362 , 24251359
-
 to-do: Some of the abstracts may be incomplete. It seems not so important.
