@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V2.5: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V2.6: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -155,7 +155,6 @@ var	w=document.getElementById('pmid').value.replace(/\D/g, "");
 	urlText = "https://pubmed.ncbi.nlm.nih.gov/"+w;
 	window.open(urlText,"_blank");
 }
-
 async function pubmedGetir() {
 var	w='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id='+
 document.getElementById('pmid').value.replace(/\D/g, ""); // Pubmedid için yazışan sadece rakamları al
@@ -166,7 +165,7 @@ fetch(w, { mode: 'cors'})
     const parser = new DOMParser();
 // console.log(data);
 // özet metninden işaretleri kaldır: <b> </b> <sub> </sub>
-const trimmed = data.replace(/<b>/g, "").replace(/<\/b>/g, "").replace(/<sub>/g, "").replace(/<\/sub>/g, "");
+const trimmed = data.replace(/<b>/g, "").replace(/<\/b>/g, "").replace(/<sub>/g, "").replace(/<\/sub>/g, ""); 
 const xmlDoc = parser.parseFromString(trimmed, "application/xml");
 // php ile çağrılmış ve doldurulmuş alanları sil
 document.getElementById('PMID').value="";
@@ -229,18 +228,18 @@ if (xmlDoc.getElementsByTagName('EndPage')[0])
 	document.getElementById('EndPage').value=xmlDoc.getElementsByTagName('EndPage')[0].childNodes[0].nodeValue;	
 // php'nin aksine, tek yazar için de, çok yazar için de aynı kod çalışıyor
 var yazarYaz='';
-var yazarlar=xmlDoc.getElementsByTagName('AuthorList')[0];
-var yazarSay=yazarlar.childNodes.length;
-var n=0;
-for(var i=0; i<yazarSay;i++){
-	if ( xmlDoc.getElementsByTagName('ForeName')[i]) {
-    yazarYaz=yazarYaz+xmlDoc.getElementsByTagName('ForeName')[i].childNodes[0].nodeValue + ' ';
-	yazarYaz=yazarYaz+xmlDoc.getElementsByTagName('LastName')[i].childNodes[0].nodeValue + ', '
-	n=n+1;
-	}
+var yazarSay=0;
+const adlar = xmlDoc.evaluate('//PubmedArticle/MedlineCitation/Article/AuthorList/Author/ForeName', xmlDoc);
+const soyadlar = xmlDoc.evaluate('//PubmedArticle/MedlineCitation/Article/AuthorList/Author/LastName', xmlDoc);
+let buAd=adlar.iterateNext()
+while (buAd) {
+	ad=buAd.textContent 
+	let soyad=soyadlar.iterateNext().textContent;
+	yazarYaz=yazarYaz+ad + ' '+ soyad+ ', ';
+	yazarSay=yazarSay+1;
+	buAd=adlar.iterateNext();
 }
-yazarSay=n; // sadece Adı ve Soyadı olan gerçek insan isimleri sayıldı, yazar grubu ismi sayılmadı
-// yazar sayısı
+// yazar sayısı: sadece Adı ve Soyadı olan gerçek insan isimleri sayıldı, yazar grubu ismi sayılmadı
 document.getElementById('yazarS').value=yazarSay;
 // yazarların isimleri. metin sonundaki boşluk ve virgül silindi
 document.getElementById('yazarlar').value=yazarYaz.slice(0, -2); 
