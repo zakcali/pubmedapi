@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V2.6: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V2.7: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -126,10 +126,10 @@ else if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstr
 <form method="post" action="">
 pubmed id (PMID)  numarasını giriniz<br/>
 <input type="text" name="pmid" id="pmid" value="<?php echo $PMID;?>" >
-<input type="submit">
+<input type="submit" value="Pubmed yayın bilgilerini PHP ile getir"> 
+<button id="pubmedGetir" onclick="pubmedGetir()">Pubmed yayın bilgilerini JScript ile getir</button>
 </form>
 <button id="pubmedGoster" onclick="pubmedGoster()">Pubmed yayınını göster</button>
-<button id="pubmedGetir" onclick="pubmedGetir()">Pubmed yayın bilgilerini JScript ile getir</button>
 <br/>
 PMID: <input type="text" name="PMID" size="19" maxlength="19" id="PMID" value="<?php echo $PMID;?>" >  
 doi: <input type="text" name="doi" size="55"  id="doi" value="<?php echo $doi;?>"> <br/>
