@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V2.8: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V3.0: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -12,147 +12,52 @@ programmed by Zafer Akçalı, MD -->
 // pubmedapi
 // By Zafer Akçalı, MD
 // Zafer Akçalı tarafından programlanmıştır
-$PMID=$doi=$ArticleTitle=$dergi=$ISOAbbreviation=$ISSN=$eISSN=$Year=$Volume=$Issue=$StartPage=$EndPage=$yazarlar=$PublicationType=$AbstractText="";
-$yazarS=0;
-if (isset($_POST['pmid'])) {
-$girilenveri=trim($_POST["pmid"]);
+require_once './getPmPublication.php';
+$p=new getPmPublication ();
 
-if($girilenveri!=""){
-$preText="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=";
-$url=$preText.preg_replace("/[^0-9]/", "", $girilenveri ); // sadece rakamlar
-// https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
-// saniyede 10'dan fazla sorgu için, api-key alarak aşağıdaki iki satırı açmalısınız: 
-// $postText="&api_key=ABCD1234";
-// $url = $url.$postText;
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
-curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-curl_setopt($ch, CURLOPT_URL, $url);
-$data=curl_exec($ch);
-curl_close($ch);
-$xml_object = simplexml_load_string($data);
-$xml_array=json_decode(json_encode($xml_object),1);
-// print_r ($xml_array['PubmedArticle']['MedlineCitation']);
-// PMID gelmediyse hata var, gerisine devam etme
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['PMID'])) {
-//PubmedId PMID
-$PMID=($xml_array['PubmedArticle']['MedlineCitation']['PMID']);
-// doi : gelen cevap dizi bile olsa ilk elemanı her zaman doi
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'])) {
-if (!is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']))
-	$doi= ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
-else {// dizi içinde 10.0 ile başlayan gerçek doi numarasını bulur 
-	$count = count ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
-	for  ($i=0; $i<$count; $i++) {
-		$doi=$xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][$i];
-			if (substr ($doi, 0, 3) == '10.')
-				break;
-		}
-	}
-}
-// Makalenin başlığı
-$ArticleTitle= $xml_array['PubmedArticle']['MedlineCitation']['Article']['ArticleTitle'];
-// Dergi ismi
-$dergi = $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['Title'];
-if (strpos($dergi, " :") !== false) // : kullanılmışsa gerisini kaldır at
-	$dergi = substr($dergi, 0, strpos($dergi, " :"));
-// Dergi kısa ismi
-$ISOAbbreviation= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['ISOAbbreviation'];
-// ISSN numarası
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['MedlineJournalInfo']['ISSNLinking']))
-	$ISSN=$xml_array['PubmedArticle']['MedlineCitation']['MedlineJournalInfo']['ISSNLinking'];
-//eISSN numarası
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['ISSN']))
-	$eISSN=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['ISSN'];
-// Derginin basıldığı / yayımlandığı yıl
-$Year =$xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['PubDate']['Year'];
-// Eğer var ise Cilt numarası
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Volume']) )
-	$Volume=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Volume'];
-//Sayı
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Issue']))
-	$Issue= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Journal']['JournalIssue']['Issue'];
-// Başlangıç sayfası veya elektronik dergilerde makale numarası
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage']))
-	$StartPage= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['StartPage'];
-// Bitiş sayfası
-if (isset($xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['EndPage']))
-	$EndPage= $xml_array['PubmedArticle']['MedlineCitation']['Article']['Pagination']['EndPage'];
-// Yazar sayısını ve yazar isimlerini bul	
-if (isset ( $xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'][0])) {
-// birden fazla yazar var: hepsini teker teker çağır, sadece isim-soyismi olan yazarları topla, grup ismi var ise sayma
-$n=0;
-$count = count ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']);
-for  ($i=0; $i<$count; $i++) {
-	if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'][$i]['ForeName'] )) {
-		// CollectiveName - Grup İsmi yok
-		$author = $xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author'][$i]; 
-		$yazarlar = $yazarlar.$author['ForeName'].' '.$author['LastName'].', ';
-		$n=$n+1;
-		}
-}
-// yazar sayısı
-$yazarS=$n;
-// yazarların isimleri. metin sonundaki boşluk ve virgül silindi
-$yazarlar=substr ($yazarlar,0,-2);
-}
-else {
-// tek yazar var, yazar sayısı 1
-	$yazarS=1;
-// tek yazarın ismi
-	$yazarlar=$xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['ForeName'].' '
-	.$xml_array['PubmedArticle']['MedlineCitation']['Article']['AuthorList']['Author']['LastName'];
-}
-// yayın türü belirtilmiş ise ve birden fazla yayın türü var: sadece ilk türü al
-if (is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'])) 
-	$PublicationType=$xml_array['PubmedArticle']['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'][0];
-// yayın türü belirtilmiş, ama sadece 1 adet yayın türü var	
-else $PublicationType=$xml_array['PubmedArticle']['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'];
-// Abstract, yani özet var ise
-if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract'])) {
-// Özet, her cümlesi ayrı bir dizi elemanı olacak şekilde dizilmiş ise, dizinin sadece ilk elemanını al
-if (is_array ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText']) )
-	$AbstractText=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'][0];
-// özet, çok cümleli de olsa, tek bir eleman olarak aktarılmış
-else if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'])) 
-	$AbstractText=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'];
-			}
-		}
-	}
+if (isset($_POST['pmid'])) {
+$girilenveri=preg_replace("/[^0-9]/", "", $_POST["pmid"] ); // sadece rakamlar
+$p->pmPublication ($girilenveri);
 }
 ?>
 <a href="PMID nerede.png" target="_blank"> PMID nereden bakılır? </a>
 <form method="post" action="">
 pubmed id (PMID)  numarasını giriniz<br/>
-<input type="text" name="pmid" id="pmid" value="<?php echo $PMID;?>" >
+<input type="text" name="pmid" id="pmid" value="<?php echo $p->PMID;?>" >
 <input type="submit" value="Pubmed yayın bilgilerini PHP ile getir"> 
 </form>
 <button id="pubmedGetir" onclick="pubmedGetir()">Pubmed yayın bilgilerini JScript ile getir</button>
 <button id="pubmedGoster" onclick="pubmedGoster()">Pubmed yayınını göster</button>
+<button id="doiGit" onclick="doiGit()">doi ile yayına git</button>
 <br/>
-PMID: <input type="text" name="PMID" size="19" maxlength="19" id="PMID" value="<?php echo $PMID;?>" >  
-doi: <input type="text" name="doi" size="55"  id="doi" value="<?php echo $doi;?>"> <br/>
-Makalenin başlığı: <input type="text" name="ArticleTitle" size="85"  id="ArticleTitle" value="<?php echo $ArticleTitle;?>"> <br/>
-Dergi ismi: <input type="text" name="Title" size="50"  id="Title" value="<?php echo $dergi;?>"> 
-Kısa ismi: <input type="text" name="ISOAbbreviation" size="26"  id="ISOAbbreviation" value="<?php echo $ISOAbbreviation;?>"> <br/>
-ISSN: <input type="text" name="ISSN" size="8"  id="ISSN" value="<?php echo $ISSN;?>">
-eISSN: <input type="text" name="eISSN" size="8"  id="eISSN" value="<?php echo $eISSN;?>"> <br/>
-Yıl: <input type="text" name="Year" size="4"  id="Year" value="<?php echo $Year;?>">
-Cilt: <input type="text" name="Volume" size="2"  id="Volume" value="<?php echo $Volume;?>">
-Sayı: <input type="text" name="Issue" size="2"  id="Issue" value="<?php echo $Issue;?>">
-Sayfa/numara: <input type="text" name="StartPage" size="2"  id="StartPage" value="<?php echo $StartPage;?>">
-- <input type="text" name="EndPage" size="2"  id="EndPage" value="<?php echo $EndPage;?>">
-Yazar sayısı: <input type="text" name="yazarS" size="2"  id="yazarS" value="<?php echo $yazarS;?>"><br/>
-Yazarlar: <input type="text" name="yazarlar" size="95"  id="yazarlar" value="<?php echo $yazarlar;?>"><br/>
-Yayın türü: <input type="text" name="PublicationType" size="20"  id="PublicationType" value="<?php echo $PublicationType;?>">
+PMID: <input type="text" name="PMID" size="19" maxlength="19" id="PMID" value="<?php echo $p->PMID;?>" >  
+doi: <input type="text" name="doi" size="55"  id="doi" value="<?php echo $p->doi;?>"> <br/>
+Makalenin başlığı: <input type="text" name="ArticleTitle" size="85"  id="ArticleTitle" value="<?php echo str_replace ('"',  '&#34',$p->ArticleTitle);?>"> <br/>
+Dergi ismi: <input type="text" name="Title" size="50"  id="Title" value="<?php echo $p->dergi;?>"> 
+Kısa ismi: <input type="text" name="ISOAbbreviation" size="26"  id="ISOAbbreviation" value="<?php echo $p->ISOAbbreviation;?>"> <br/>
+ISSN: <input type="text" name="ISSN" size="8"  id="ISSN" value="<?php echo $p->ISSN;?>">
+eISSN: <input type="text" name="eISSN" size="8"  id="eISSN" value="<?php echo $p->eISSN;?>"> <br/>
+Yıl: <input type="text" name="Year" size="4"  id="Year" value="<?php echo $p->Year;?>">
+Cilt: <input type="text" name="Volume" size="2"  id="Volume" value="<?php echo $p->Volume;?>">
+Sayı: <input type="text" name="Issue" size="2"  id="Issue" value="<?php echo $p->Issue;?>">
+Sayfa/numara: <input type="text" name="StartPage" size="2"  id="StartPage" value="<?php echo $p->StartPage;?>">
+- <input type="text" name="EndPage" size="2"  id="EndPage" value="<?php echo $p->EndPage;?>">
+Yazar sayısı: <input type="text" name="yazarS" size="2"  id="yazarS" value="<?php echo $p->yazarS;?>"><br/>
+Yazarlar: <input type="text" name="yazarlar" size="95"  id="yazarlar" value="<?php echo $p->yazarlar;?>"><br/>
+Yayın türü: <input type="text" name="PublicationType" size="20"  id="PublicationType" value="<?php echo $p->PublicationType;?>">
 <br/>
 Özet <br/>
-<textarea rows = "20" cols = "90" name = "ozet" id="ozetAlan"><?php echo $AbstractText;?></textarea> 
+<textarea rows = "20" cols = "90" name = "ozet" id="ozetAlan"><?php echo $p->AbstractText;?></textarea> 
 <script>
 function pubmedGoster() {
 var	w=document.getElementById('pmid').value.replace(/\D/g, "");
 	urlText = "https://pubmed.ncbi.nlm.nih.gov/"+w;
+	window.open(urlText,"_blank");
+}
+function doiGit() {
+var	w=document.getElementById('doi').value;
+urlText = "https://doi.org/"+w;
+if ( w != '')
 	window.open(urlText,"_blank");
 }
 async function pubmedGetir() {
