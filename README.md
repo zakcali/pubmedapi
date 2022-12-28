@@ -9,6 +9,9 @@ you may get if you query more than 3 documents per second "{"error":"/lbsm/eutil
 to be able to query more than 10 documents per seconds you must get an api which is freely available, please read: https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
 
 There are both php and javascript code to fetch from publons api.
+better use an api-key for php code at line:
+
+    $postText="&api_key=Your-API-KEY";
 
 javascript code works from browser, so api-key maynot be necessary. Also your api key must not be visible on other users web browser
 
