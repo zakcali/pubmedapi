@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V3.0: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V3.1: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -17,12 +17,13 @@ $p=new getPmPublication ();
 
 if (isset($_POST['pmid'])) {
 $girilenveri=preg_replace("/[^0-9]/", "", $_POST["pmid"] ); // sadece rakamlar
-$p->pmPublication ($girilenveri);
+if($girilenveri!="") 
+	$p->pmPublication ($girilenveri);
 }
 ?>
 <a href="PMID nerede.png" target="_blank"> PMID nereden bakılır? </a>
 <form method="post" action="">
-pubmed id (PMID)  numarasını giriniz<br/>
+pubmed id (PMID)  numarasını giriniz. <?php echo ' '.$p->dikkat;?><br/>
 <input type="text" name="pmid" id="pmid" value="<?php echo $p->PMID;?>" >
 <input type="submit" value="Pubmed yayın bilgilerini PHP ile getir"> 
 </form>
