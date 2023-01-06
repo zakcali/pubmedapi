@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V3.1: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V3.2: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -12,7 +12,7 @@ programmed by Zafer Akçalı, MD -->
 // pubmedapi
 // By Zafer Akçalı, MD
 // Zafer Akçalı tarafından programlanmıştır
-require_once './getPmPublication.php';
+require_once 'getPmPublication.php';
 $p=new getPmPublication ();
 
 if (isset($_POST['pmid'])) {
@@ -33,7 +33,7 @@ pubmed id (PMID)  numarasını giriniz. <?php echo ' '.$p->dikkat;?><br/>
 <br/>
 PMID: <input type="text" name="PMID" size="19" maxlength="19" id="PMID" value="<?php echo $p->PMID;?>" >  
 doi: <input type="text" name="doi" size="55"  id="doi" value="<?php echo $p->doi;?>"> <br/>
-Makalenin başlığı: <input type="text" name="ArticleTitle" size="85"  id="ArticleTitle" value="<?php echo str_replace ('"',  '&#34',$p->ArticleTitle);?>"> <br/>
+Başlık: <input type="text" name="ArticleTitle" size="96"  id="ArticleTitle" value="<?php echo str_replace ('"',  '&#34',$p->ArticleTitle);?>"> <br/>
 Dergi ismi: <input type="text" name="Title" size="50"  id="Title" value="<?php echo $p->dergi;?>"> 
 Kısa ismi: <input type="text" name="ISOAbbreviation" size="26"  id="ISOAbbreviation" value="<?php echo $p->ISOAbbreviation;?>"> <br/>
 ISSN: <input type="text" name="ISSN" size="8"  id="ISSN" value="<?php echo $p->ISSN;?>">
