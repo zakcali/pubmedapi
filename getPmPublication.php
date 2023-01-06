@@ -23,16 +23,14 @@ class getPmPublication {
 	$data=curl_exec($ch);
 	curl_close($ch);
 	$xml_object = simplexml_load_string($data);
-	$dizi=json_decode(json_encode($xml_object),1);
+	$xml_array=json_decode(json_encode($xml_object),1);
 // print_r ($xml_array['PubmedArticle']['MedlineCitation']);
 // PMID gelmediyse hata var, gerisine devam etme
-	if (isset ($dizi['PubmedArticle']['MedlineCitation']['PMID'])) {
-		$this->getDocumentData ($dizi);
-			} // PMID geldi ve işlem yaptın
-	else $this->dikkat='yayın bulunamadı';
-} // final function pmPublication
+	if (!isset ($xml_array['PubmedArticle']['MedlineCitation']['PMID'])) {
+		$this->dikkat='yayın bulunamadı';
+		return; } 
+// PMID geldi, devam et 		
 
-private function getDocumentData (& $xml_array)  {
 //PubmedId PMID
 	$this->PMID=($xml_array['PubmedArticle']['MedlineCitation']['PMID']);
 // doi 
@@ -112,7 +110,7 @@ private function getDocumentData (& $xml_array)  {
 // özet, çok cümleli de olsa, tek bir eleman olarak aktarılmış
 		else if (isset ($xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'])) 
 			$this->AbstractText=$xml_array['PubmedArticle']['MedlineCitation']['Article']['Abstract']['AbstractText'];
-		}
-	} // private function getDocumentData 
 		
+		} 
+	} // final function pmPublication
 }
