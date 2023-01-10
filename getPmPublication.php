@@ -1,12 +1,14 @@
 <?php
 class getPmPublication {
-	public $PMID='', $doi='', $ArticleTitle='', $dergi='', $ISOAbbreviation='', $ISSN='', $eISSN='', $Year='', $Volume='', $Issue='', $StartPage='', $EndPage='', $yazarlar='', $PublicationType='', $AbstractText='', $dikkat='';
-	
-	public $yazarS=0;
-		    function __construct() {
+	function __construct() {
+		$this->initialize();
+		}
+	function initialize () {
+		$this->PMID=''; $this->doi=''; $this->ArticleTitle=''; $this->dergi=''; $this->ISOAbbreviation=''; $this->ISSN=''; $this->eISSN=''; $this->Year=''; $this->Volume=''; $this->Issue=''; $this->StartPage=''; $this->EndPage=''; $this->yazarlar=''; $this->PublicationType=''; $this->AbstractText=''; $this->dikkat='';
+		$this->yazarS=0; 
 		}
 	final function pmPublication ($numara) {
-
+	$this->initialize();
 	$preText="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=";
 	$url=$preText.preg_replace("/[^0-9]/", "", $numara ); // sadece rakamlar
 // https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
