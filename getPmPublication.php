@@ -12,8 +12,7 @@ class getPmPublication {
 	$preText="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=";
 	$url=$preText.preg_replace("/[^0-9]/", "", $numara ); // sadece rakamlar
 // https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
-// saniyede 10'dan fazla sorgu için, api-key alarak aşağıdaki iki satırı açmalısınız: 
-//$postText="";
+// saniyede 3'den fazla, 11'den az sorgu için, api-key alarak aşağıdaki iki satırı açmalısınız: 
 	$postText="&api_key=your-API-KEY";
 	$url = $url.$postText;
 //echo ($url);
@@ -26,7 +25,7 @@ class getPmPublication {
 	curl_close($ch);
 	$xml_object = simplexml_load_string($data);
 	$xml_array=json_decode(json_encode($xml_object),1);
-// print_r ($xml_array['PubmedArticle']['MedlineCitation']);
+// print_r ($xml_array['PubmedArticle']['PubmedData']['ArticleIdList']['ArticleId']);
 // PMID gelmediyse hata var, gerisine devam etme
 	if (!isset ($xml_array['PubmedArticle']['MedlineCitation']['PMID'])) {
 		$this->dikkat='yayın bulunamadı';
@@ -42,12 +41,25 @@ class getPmPublication {
 			else {// dizi içinde 10.0 ile başlayan gerçek doi numarasını bulur 
 				$count = count ($xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID']);
 				for  ($i=0; $i<$count; $i++) {
-					$this->doi=$xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][$i];
-					if (substr ($this->doi, 0, 3) == '10.')
-					break;
+					$doi=$xml_array['PubmedArticle']['MedlineCitation']['Article']['ELocationID'][$i];
+					if (substr ($this->doi, 0, 3) == '10.') {
+                        $this->doi = $doi;
+                        break;
+                        }
 					}
 				}
 			}
+        if (isset($xml_array['PubmedArticle']['PubmedData']['ArticleIdList']['ArticleId']))  {// try to catch doi again
+        $count = count ($xml_array['PubmedArticle']['PubmedData']['ArticleIdList']['ArticleId']);
+            for  ($i=0; $i<$count; $i++) {
+                $doi=$xml_array['PubmedArticle']['PubmedData']['ArticleIdList']['ArticleId'][$i];
+                if (substr ($doi, 0, 3) == '10.') {
+                    $this->doi=$doi;
+                    break;
+                }
+
+            }
+        }
 // Makalenin başlığı
 	$this->ArticleTitle= $xml_array['PubmedArticle']['MedlineCitation']['Article']['ArticleTitle'];
 // Dergi ismi
