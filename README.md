@@ -55,5 +55,6 @@ you can try those pmid's, some are challenging
 32120362 , 24251359 // difficult for authorlist-for javascipt
 
 31258358 // difficult for substring tag <sub> </sub> for javascript
+25735358  // difficult, because doi is in ArticleId instead of ELocationID
 
 to-do: Some of the abstracts may be incomplete. It seems not so important.
