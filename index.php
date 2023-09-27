@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- pubmedapi V3.3: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur 
+<!-- pubmedapi V3.5: bu yazılım Dr. Zafer Akçalı tarafından oluşturulmuştur
 programmed by Zafer Akçalı, MD -->
 <html>
 <head>
@@ -93,16 +93,29 @@ document.getElementById('ozetAlan').value="";
 //PubmedId PMID
 document.getElementById('PMID').value=xmlDoc.getElementsByTagName('PMID')[0].childNodes[0].nodeValue;
 // eğer var ise, doi
-if (xmlDoc.getElementsByTagName('ELocationID')[0]) {
 var doi="";
-const count=xmlDoc.getElementsByTagName('ELocationID').length;
+if (xmlDoc.getElementsByTagName('ELocationID')[0]) {
+count=xmlDoc.getElementsByTagName('ELocationID').length;
 for (var i=0; i<count; i++) {
-	doi=xmlDoc.getElementsByTagName('ELocationID')[i].childNodes[0].nodeValue;
-	if (doi.substring (0,3)== '10.') // gerçek doi, 10. ile başlar
+	temp=xmlDoc.getElementsByTagName('ELocationID')[i].childNodes[0].nodeValue;
+	if (temp.substring (0,3)== '10.') { // gerçek doi, 10. ile başlar
+		doi=temp;
 		break;
 	}
-document.getElementById('doi').value=doi;
+	}
 }
+// console.log (xmlDoc.getElementsByTagName('ArticleId'));
+if (xmlDoc.getElementsByTagName('ArticleId')) {
+count=xmlDoc.getElementsByTagName('ArticleId').length;
+for (var i=0; i<count; i++) {
+	temp=xmlDoc.getElementsByTagName('ArticleId')[i].childNodes[0].nodeValue;
+	if (temp.substring (0,3)== '10.') { // gerçek doi, 10. ile başlar 
+		doi=temp;
+		break;
+	}
+	}
+}
+document.getElementById('doi').value=doi;
 // Makalenin başlığı
 document.getElementById('ArticleTitle').value=xmlDoc.getElementsByTagName('ArticleTitle')[0].childNodes[0].nodeValue;
 // Dergi ismi, " :" görürsen sonrasını kes, kaldır-at
